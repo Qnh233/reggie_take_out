@@ -1,0 +1,30 @@
+server:
+  port: 8080
+spring:
+ application:
+  name: reggie_take_out
+ datasource:
+   druid:
+   driver-class-name: com.mysql.cj.jdbc.Driver
+   url: jdbc:mysql://localhost:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+   username: root
+   password: root
+ mail:
+  # 163邮箱的地址为smtp.163.com，直接填写即可
+  host: smtp.qq.com
+  # 你申请的163邮箱
+  username: qiongnianhao@qq.com
+  # 注意密码是在开启smtp/pop3时自动生成的，不是邮箱密码，记得保存一下，不然就找不到了
+  password: krabhuxqbmjghdfa
+
+mybatis-plus:
+  configuration:
+#???????????????????????????????????????
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+   db-config:
+    id-type: ASSIGN_ID
+reggie:
+  path: D:\img\
+
