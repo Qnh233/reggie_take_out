@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hao.common.R;
 import com.hao.domain.Category;
-import com.hao.domain.Dish;
 import com.hao.domain.Setmeal;
 import com.hao.domain.SetmealDish;
 import com.hao.dto.SetmealDto;
@@ -14,6 +13,9 @@ import com.hao.service.SetmealService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -44,7 +46,11 @@ public class SetmealController {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private RedisCacheManager cacheManager;
+
     @PostMapping
+    @CacheEvict(value = "setmealCache", allEntries = true)
     public R<String> save(@RequestBody SetmealDto setmealDto)
     {
         log.info(setmealDto.toString());
@@ -152,6 +158,7 @@ public class SetmealController {
 
     @DeleteMapping
     @Transactional
+    @CacheEvict(value = "setmealCache", allEntries = true)
     public R<String> delete(Long[] ids)
     {
         log.info("删除套餐ids：{}",ids);
@@ -190,6 +197,7 @@ public class SetmealController {
 
 
     @GetMapping("/list")
+    @Cacheable(value = "setmealCache",key = "#categoryId+'_'+#status")
     public R<List<Setmeal>> getByIdlist(Long categoryId,Integer status)
     {
         log.info("获取分类{}下套餐。",categoryId);
