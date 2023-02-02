@@ -5,12 +5,16 @@ import com.hao.domain.User;
 import com.hao.mapper.UserMapper;
 import com.hao.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 必燃
@@ -27,6 +31,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Value("${spring.mail.username}")
     String email;
 
+    @Autowired
+    private StringRedisTemplate template;
+
     @Override
     public void sendVerifyCode(String mail) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -35,14 +42,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //设置随机数作为验证码
         Random random = new Random();
         int code = random.nextInt(89999) + 10000;//小心机
-//        //用redis保存验证码
-//        //提前验证一下，如果发送了多次则删除上一次的验证码，保留最新的验证码
-//        if (template.opsForValue().get("verify:code:"+mail)!=null){
-//            template.delete("verify:code:"+mail);
-//        }
-//        template.opsForValue().set("verify:code:"+mail,code+"",5, TimeUnit.MINUTES);//设置五分钟过期时间
+        //用redis保存验证码
+        //提前验证一下，如果发送了多次则删除上一次的验证码，保留最新的验证码
+        if (template.opsForValue().get("verify:code:"+mail)!=null){
+            template.delete("verify:code:"+mail);
+        }
+        template.opsForValue().set("verify:code:"+mail,code+"",5, TimeUnit.MINUTES);//设置五分钟过期时间
         //不使用微服务 使用本地记录
-        CodeCheck.setcodes(code);
+//        CodeCheck.setcodes(code);
         //邮件内容
         message.setText("您的验证码是："+code+"，请及时完成注册。若不是本人操作请忽略");
         message.setFrom(email); //谁发送，必须和yaml文件中的账号一致
@@ -53,13 +60,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean doVerify(String mail, String code) {
-//        String string = template.opsForValue().get("verify:code:"+mail);
-        Integer integer = Integer.valueOf(code);
-        if (CodeCheck.getcodes()==integer){
-//            integertemplate.delete("verify:code:"+mail);
-            CodeCheck.removecode();
+        String string = (String) template.opsForValue().get("verify:code:"+mail);
+
+        if(string.equals(code))
+        {
+            template.delete("verify:code:"+mail);
             return true;
         }
+//        Integer integer = Integer.valueOf(code);
+//        if (CodeCheck.getcodes()==integer){
+////            integertemplate.delete("verify:code:"+mail);
+//            CodeCheck.removecode();
+//            return true;
+//        }
         return false;
     }
 }
