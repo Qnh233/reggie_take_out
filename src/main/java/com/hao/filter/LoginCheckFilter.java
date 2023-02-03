@@ -44,7 +44,7 @@ public class LoginCheckFilter implements Filter {
 
         if(check(urls,requestURI))
         {
-            log.info("拦截到请求：{} 不需要处理",(requestURI));
+//            log.info("拦截到请求：{} 不需要处理",(requestURI));
             filterChain.doFilter(request,respond);
             return;
         }
