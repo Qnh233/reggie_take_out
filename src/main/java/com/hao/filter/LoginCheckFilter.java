@@ -30,7 +30,7 @@ public class LoginCheckFilter implements Filter {
         HttpServletResponse respond= (HttpServletResponse) servletResponse;
 
         String requestURI = request.getRequestURI();
-        log.info("拦截到请求：{}",(requestURI));
+//        log.info("拦截到请求：{}",(requestURI));
         String[] urls = new String[]
                 {
                         "/employee/login",
@@ -40,11 +40,18 @@ public class LoginCheckFilter implements Filter {
                         "/user/**",
 //                        "/addressBook/**",
 //                        "/order/**"
+                        "/user/login",
+                        "/user/sendMsg",
+                        "/doc.html",
+                        "/webjars/**",
+                        "/swagger-resources",
+                        "/v2/api-docs",
+                        "/favicon.ico"
                 };
 
         if(check(urls,requestURI))
         {
-//            log.info("拦截到请求：{} 不需要处理",(requestURI));
+            log.info("拦截到请求：{} 不需要处理",(requestURI));
             filterChain.doFilter(request,respond);
             return;
         }
@@ -67,7 +74,7 @@ public class LoginCheckFilter implements Filter {
             else
             {
                 //做出响应 前端有对于拦截器的监听
-                log.info("用户未登录!");
+                log.info("拦截到请求：{} 用户未登录!",requestURI);
                 respond.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
             }
         }
